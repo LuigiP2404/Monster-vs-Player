@@ -1,4 +1,4 @@
-let quantitaRandom = (max, min) => {
+let randomQuantity = (max, min) => {
     return Math.floor(Math.random()*(max - min)+min);
 }
 
@@ -7,62 +7,61 @@ const app = Vue.createApp({
         return {
             monsterHp: 100,
             playerHp: 100,
-            roundAttuale: 0,
-            attaccoSpecialeUsato: 0,
-            attaccoSpecialePronto: true,
-            esito: '',
-            disattivaBottoni: false,
-            roundAzione: 0,
-            azioni: []
+            currentRound: 0,
+            specialAttackUsed: 0,
+            specialAttackReady: true,
+            result: '',
+            disableButtons: false,
+            actions: []
         };
     },
     methods: {
-        attaccaMostro() {
-            let quantitaDanni = quantitaRandom(12,5);
-            this.monsterHp -= quantitaDanni;
-            this.attaccaGiocatore();
-            this.roundAttuale++;
-            this.aggiungiMessaggio('Giocatore', 'attacco', quantitaDanni);
+        attackMonster() {
+            let damageAmount = randomQuantity(12,5);
+            this.monsterHp -= damageAmount;
+            this.attackPlayer();
+            this.currentRound++;
+            this.addMessage('Player', 'attack', damageAmount);
         },
-        attaccaGiocatore() {
-            let quantitaDanni = quantitaRandom(15,8);
-            this.playerHp -= quantitaDanni;
-            this.aggiungiMessaggio('Mostro', 'attacco', quantitaDanni);
+        attackPlayer() {
+            let damageAmount = randomQuantity(15,8);
+            this.playerHp -= damageAmount;
+            this.addMessage('Monster', 'attack', damageAmount);
         },
-        attaccoSpecialeMostro() {
-            let quantitaDanni = quantitaRandom(25,10);
-            this.monsterHp -= quantitaDanni;
-            this.attaccoSpecialeUsato = this.roundAttuale;
-            this.attaccoSpecialePronto = false;
-            this.roundAttuale++;
-            this.attaccaGiocatore();
-            this.aggiungiMessaggio('Giocatore', 'attaccoPotenziato', quantitaDanni);
+        specialAttackMonster() {
+            let damageAmount = randomQuantity(25,10);
+            this.monsterHp -= damageAmount;
+            this.specialAttackUsed = this.currentRound;
+            this.specialAttackReady = false;
+            this.currentRound++;
+            this.attackPlayer();
+            this.addMessage('Player', 'specialAttack', damageAmount);
         },
-        curaGiocatore() {
-            let quantitaCura = quantitaRandom(20,5);
+        healPlayer() {
+            let quantitaCura = randomQuantity(20,5);
             this.playerHp += quantitaCura;
-            this.roundAttuale++;
-            this.attaccaGiocatore();
-            this.aggiungiMessaggio('Giocatore', 'cura', quantitaCura);
+            this.currentRound++;
+            this.attackPlayer();
+            this.addMessage('Player', 'heal', quantitaCura);
         },
-        resa() {
+        surrender() {
             this.playerHp = 0;
         },
         resetGame() {
             this.monsterHp = 100;
             this.playerHp = 100;
-            this.roundAttuale = 0;
-            this.attaccoSpecialeUsato = 0;
-            this.attaccoSpecialePronto = true;
-            this.esito = '',
-            this.disattivaBottoni = false;
-            this.azioni = [];
+            this.currentRound = 0;
+            this.specialAttackUsed = 0;
+            this.specialAttackReady = true;
+            this.result = '',
+            this.disableButtons = false;
+            this.actions = [];
         },
-        aggiungiMessaggio(chi, tipo, quantita) {
-            this.azioni.unshift({
-                azioneDa: chi,
-                azioneTipo: tipo, 
-                azioneQuanto: quantita
+        addMessage(chi, tipo, quantita) {
+            this.actions.unshift({
+                actionFrom: chi,
+                actionType: tipo, 
+                actionQuantity: quantita
             });
         }
     },
@@ -72,7 +71,7 @@ const app = Vue.createApp({
                 this.monsterHp = 0;
             }
             if (this.playerHp > 0 && this.monsterHp == 0) {
-                this.esito = 'Hai vinto!';
+                this.result = 'You Won!';
             }
         },
         playerHp(val) {
@@ -83,24 +82,21 @@ const app = Vue.createApp({
                 this.playerHp = 100;
             }
             if (this.monsterHp > 0 && this.playerHp == 0) {
-                this.esito = 'Hai perso!';
+                this.result = 'You Lost!';
             }
             if (this.monsterHp == 0 && this.playerHp == 0) {
-                    this.esito = 'Pareggio!';
+                    this.result = 'Tie!';
             }   
         },
-        /* Se il round - 4 è uguale al round in cui è stato usato l'attacco speciale, sblocca
-        il bottone. Quindi se 3 round fa è stato usato l'attacco speciale, al 4° sblocca il 
-        bottone. */
-        roundAttuale(val) {
-            if (val - 4 == this.attaccoSpecialeUsato) {
-                this.attaccoSpecialePronto = true;
+        currentRound(val) {
+            if (val - 4 == this.specialAttackUsed) {
+                this.specialAttackReady = true;
             }
         },
-        esito(val) {
+        result(val) {
             if (val !== '') {
-                this.disattivaBottoni = true;
-                this.attaccoSpecialePronto = false;
+                this.disableButtons = true;
+                this.specialAttackReady = false;
             }
         }
     },

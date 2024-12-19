@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css" />
     <link rel="icon" href="img/logobianco.png">
     <script src="https://unpkg.com/vue@next" defer></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="js/app.js" defer></script>
   </head>
   <body>
@@ -15,40 +16,40 @@
       <h1>Monster vs Player</h1>
     </header>
     <div id="game" v-cloak>
-      <h2 style="text-align: center">Round Attuale: {{ roundAttuale + 1 }} </h2>
+      <h2 style="text-align: center">Current Round: {{ currentRound + 1 }} </h2>
       <section id="monster" class="container">   
-        <h2>Vita del Mostro</h2>
+        <h2>Monster HP</h2>
         <div class="healthbar">
           <div class="healthbar__value" :style="monsterHbClass"></div>
         </div>
       </section>
       <section id="player" class="container">
-        <h2>Vita del Giocatore</h2>
+        <h2>Player HP</h2>
         <div class="healthbar">
           <div class="healthbar__value" :style="playerHbClass"></div>
         </div>
       </section>
-      <section class="container" v-if=" esito !== '' ">
-        <h2>{{ esito }}</h2>
-        <button @click="resetGame">Nuova Partita</button>
+      <section class="container" v-if="result !== '' ">
+        <h2>{{ result }}</h2>
+        <button @click="resetGame">New Game</button>
       </section>
       <section id="controls">
-        <button @click="attaccaMostro" :disabled="disattivaBottoni">ATTACCO</button>
-        <button @click="attaccoSpecialeMostro" :disabled="!attaccoSpecialePronto">ATTACCO BONUS</button>
-        <button @click="curaGiocatore" :disabled="disattivaBottoni">CURA</button>
-        <button @click="resa" :disabled="disattivaBottoni">RESA</button>
+        <button @click="attackMonster" :disabled="disableButtons">ATTACK</button>
+        <button @click="specialAttackMonster" :disabled="!specialAttackReady">SPECIAL ATTACK</button>
+        <button @click="healPlayer" :disabled="disableButtons">HEAL</button>
+        <button @click="surrender" :disabled="disableButtons">SURRENDER</button>
       </section>
       <section id="log" class="container">
         <h2>Battle Log</h2>
         <ul>
-          <li v-for="azione in azioni">
-            <span :class="{'log--player': azione.azioneDa === 'Giocatore',
-                           'log--monster': azione.azioneDa === 'Mostro'}">
-            {{ azione.azioneDa === 'Giocatore' ? 'Il giocatore' : 'Il mostro' }}</span>
-            <span v-if="azione.azioneTipo === 'cura'"> si è curato di <span class="log--heal">{{ azione.azioneQuanto }}</span></span>
-            <span v-if="azione.azioneTipo === 'attaccoPotenziato'"> ha effettuato un attacco potenziato facendo <span class="log--damage">{{ azione.azioneQuanto }}</span> danni</span>
-            <span v-if="azione.azioneTipo === 'attacco' && azione.azioneDa === 'Giocatore'"> ha attaccato facendo <span class="log--damage">{{ azione.azioneQuanto }}</span> danni</span>
-            <span v-else-if="azione.azioneDa === 'Mostro'"> ha attaccato facendo <span class="log--damage">{{ azione.azioneQuanto }}</span> danni</span>
+          <li v-for="action in actions">
+            <span :class="{'log--player': action.actionFrom === 'Player',
+                           'log--monster': action.actionFrom === 'Monster'}">
+            {{ action.actionFrom === 'Player' ? 'Player' : 'Monster' }}</span>
+            <span v-if="action.actionType === 'heal'"> healed for <span class="log--heal">{{ action.actionQuantity }}</span> HP</span>
+            <span v-if="action.actionType === 'specialAttack'"> performed a special attack dealing <span class="log--damage">{{ action.actionQuantity }}</span> HP</span>
+            <span v-if="action.actionType === 'attack' && action.actionFrom === 'Player'"> attacked dealing <span class="log--damage">{{ action.actionQuantity }}</span> HP</span>
+            <span v-else-if="action.actionFrom === 'Monster'"> attacked dealing <span class="log--damage">{{ action.actionQuantity }}</span> HP</span>
           </li>
         </ul>
       </section>
